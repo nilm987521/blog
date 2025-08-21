@@ -18,8 +18,6 @@ pipeline {
     }
     
     tools {
-        maven 'maven-3.9'
-        nodejs 'node-18'
         dockerTool 'docker'
     }
     
@@ -41,11 +39,9 @@ pipeline {
             steps {
                 sh '''
                     echo "=== 環境資訊 ==="
-                    java -version
-                    mvn -version
-                    node --version
-                    npm --version
                     docker --version
+                    echo "=== 檢查 Docker 運行狀態 ==="
+                    docker info
                 '''
             }
         }
@@ -54,14 +50,32 @@ pipeline {
             steps {
                 script {
                     try {
-                        // 清理並編譯後端
-                        sh 'mvn clean compile -DskipTests=true'
+                        // 使用 Docker 執行後端編譯和測試
+                        sh '''
+                            docker run --rm \
+                                -v ${WORKSPACE}:/workspace \
+                                -w /workspace \
+                                maven:3.9.6-openjdk-17 \
+                                mvn clean compile -DskipTests=true
+                        '''
                         
                         // 運行測試並生成覆蓋率報告
-                        sh 'mvn test jacoco:report'
+                        sh '''
+                            docker run --rm \
+                                -v ${WORKSPACE}:/workspace \
+                                -w /workspace \
+                                maven:3.9.6-openjdk-17 \
+                                mvn test jacoco:report
+                        '''
                         
                         // 檢查代碼覆蓋率
-                        sh 'mvn jacoco:check'
+                        sh '''
+                            docker run --rm \
+                                -v ${WORKSPACE}:/workspace \
+                                -w /workspace \
+                                maven:3.9.6-openjdk-17 \
+                                mvn jacoco:check
+                        '''
                         
                     } catch (Exception e) {
                         currentBuild.result = 'FAILURE'
@@ -89,22 +103,38 @@ pipeline {
         
         stage('Frontend Build') {
             steps {
-                dir('vue') {
-                    script {
-                        try {
-                            // 安裝前端依賴
-                            sh 'npm ci'
-                            
-                            // 執行 ESLint 檢查
-                            sh 'npm run lint'
-                            
-                            // 構建前端應用
-                            sh 'npm run build'
-                            
-                        } catch (Exception e) {
-                            currentBuild.result = 'FAILURE'
-                            error "前端構建失敗: ${e.getMessage()}"
-                        }
+                script {
+                    try {
+                        // 使用 Docker 執行前端依賴安裝
+                        sh '''
+                            docker run --rm \
+                                -v ${WORKSPACE}/vue:/workspace \
+                                -w /workspace \
+                                node:18-alpine \
+                                npm ci
+                        '''
+                        
+                        // 執行 ESLint 檢查
+                        sh '''
+                            docker run --rm \
+                                -v ${WORKSPACE}/vue:/workspace \
+                                -w /workspace \
+                                node:18-alpine \
+                                npm run lint
+                        '''
+                        
+                        // 構建前端應用
+                        sh '''
+                            docker run --rm \
+                                -v ${WORKSPACE}/vue:/workspace \
+                                -w /workspace \
+                                node:18-alpine \
+                                npm run build
+                        '''
+                        
+                    } catch (Exception e) {
+                        currentBuild.result = 'FAILURE'
+                        error "前端構建失敗: ${e.getMessage()}"
                     }
                 }
             }
@@ -114,8 +144,14 @@ pipeline {
             steps {
                 script {
                     try {
-                        // 打包 Spring Boot 應用 (不包含前端靜態資源，因為前端已分離)
-                        sh 'mvn package -DskipTests=true -Dmaven.frontend.skip=true'
+                        // 使用 Docker 打包 Spring Boot 應用
+                        sh '''
+                            docker run --rm \
+                                -v ${WORKSPACE}:/workspace \
+                                -w /workspace \
+                                maven:3.9.6-openjdk-17 \
+                                mvn package -DskipTests=true -Dmaven.frontend.skip=true
+                        '''
                         
                         // 驗證 JAR 檔案是否存在
                         sh 'ls -la target/*.jar'
