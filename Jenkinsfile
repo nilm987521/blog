@@ -82,24 +82,24 @@ pipeline {
             steps {
                 script {
                     try {
-                        // 使用 Docker 執行前端依賴安裝
+                        // 使用 Docker 執行前端依賴安裝（修復 npm 權限問題）
                         sh '''
                             docker run --rm \
                                 -v ${WORKSPACE}/vue:/workspace \
                                 -w /workspace \
-                                -u 103 \
+                                -u root \
                                 node:22-alpine \
-                                npm ci
+                                sh -c "chown -R 103:0 /.npm 2>/dev/null || true; su-exec 103 npm ci"
                         '''
                         
                         // 構建前端應用
                         sh '''
                             docker run --rm \
                                 -v ${WORKSPACE}/vue:/workspace \
-                                -u 103 \
                                 -w /workspace \
+                                -u root \
                                 node:22-alpine \
-                                npm run build
+                                sh -c "chown -R 103:0 /.npm 2>/dev/null || true; su-exec 103 npm run build"
                         '''
                         
                     } catch (Exception e) {
