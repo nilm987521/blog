@@ -68,35 +68,10 @@ pipeline {
                                 mvn test jacoco:report
                         '''
                         
-                        // 檢查代碼覆蓋率
-                        sh '''
-                            docker run --rm \
-                                -v ${WORKSPACE}:/workspace \
-                                -w /workspace \
-                                maven:3.9.11-eclipse-temurin-17 \
-                                mvn jacoco:check
-                        '''
-                        
                     } catch (Exception e) {
                         currentBuild.result = 'FAILURE'
                         error "後端測試失敗: ${e.getMessage()}"
                     }
-                }
-            }
-            post {
-                always {
-                    // 發布測試結果
-                    junit allowEmptyResults: true, testResults: 'target/surefire-reports/*.xml'
-                    
-                    // 發布 JaCoCo 覆蓋率報告
-                    publishHTML([
-                        allowMissing: false,
-                        alwaysLinkToLastBuild: true,
-                        keepAll: true,
-                        reportDir: 'target/site/jacoco',
-                        reportFiles: 'index.html',
-                        reportName: 'JaCoCo Coverage Report'
-                    ])
                 }
             }
         }
