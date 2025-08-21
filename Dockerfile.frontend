@@ -1,0 +1,27 @@
+FROM --platform=linux/amd64 node:18-alpine AS builder
+WORKDIR /app
+
+# 複製 package.json 和 package-lock.json
+COPY vue/package*.json ./
+
+# 安裝依賴
+RUN npm ci --only=production
+
+# 複製源代碼
+COPY vue/ .
+
+# 構建應用
+RUN npm run build
+
+# 生產環境
+FROM --platform=linux/arm64 nginx:stable-alpine3.21-perl
+COPY --from=builder /app/dist /usr/share/nginx/html
+
+# 複製 nginx 配置
+COPY vue/nginx.conf /etc/nginx/conf.d/default.conf
+
+# 設定時區
+RUN apk add --no-cache tzdata
+ENV TZ=Asia/Taipei
+
+EXPOSE 80

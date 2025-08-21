@@ -7,7 +7,8 @@ pipeline {
         
         // Docker 設定
         DOCKER_REGISTRY = 'registry.nilm.cc'
-        DOCKER_IMAGE = 'blog'
+        DOCKER_BACKEND_IMAGE = 'blog-backend'
+        DOCKER_FRONTEND_IMAGE = 'blog-frontend'
         
         // 應用設定
         SPRING_PROFILES_ACTIVE = 'prod'
@@ -109,25 +110,25 @@ pipeline {
             }
         }
         
-        stage('Package Application') {
+        stage('Package Backend Application') {
             steps {
                 script {
                     try {
-                        // 打包 Spring Boot 應用 (包含前端靜態資源)
-                        sh 'mvn package -DskipTests=true'
+                        // 打包 Spring Boot 應用 (不包含前端靜態資源，因為前端已分離)
+                        sh 'mvn package -DskipTests=true -Dmaven.frontend.skip=true'
                         
                         // 驗證 JAR 檔案是否存在
                         sh 'ls -la target/*.jar'
                         
                     } catch (Exception e) {
                         currentBuild.result = 'FAILURE'
-                        error "應用打包失敗: ${e.getMessage()}"
+                        error "後端應用打包失敗: ${e.getMessage()}"
                     }
                 }
             }
         }
         
-        stage('Build Docker Image') {
+        stage('Build Docker Images') {
             when {
                 anyOf {
                     branch 'main'
@@ -135,28 +136,60 @@ pipeline {
                     branch 'release/*'
                 }
             }
-            steps {
-                script {
-                    try {
-                        // 構建 Docker 鏡像
-                        def dockerImage = docker.build("${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${BUILD_TAG}")
-                        
-                        // 也標記為 latest (如果是 main 分支)
-                        if (env.BRANCH_NAME == 'main') {
-                            dockerImage.tag("${DOCKER_REGISTRY}/${DOCKER_IMAGE}:latest")
-                        }
-                        
-                        // 推送到私有註冊表
-                        docker.withRegistry("https://${DOCKER_REGISTRY}", 'docker-registry-credentials') {
-                            dockerImage.push()
-                            if (env.BRANCH_NAME == 'main') {
-                                dockerImage.push('latest')
+            parallel {
+                stage('Build Backend Image') {
+                    steps {
+                        script {
+                            try {
+                                // 構建後端 Docker 鏡像
+                                def backendImage = docker.build("${DOCKER_REGISTRY}/${DOCKER_BACKEND_IMAGE}:${BUILD_TAG}", "-f Dockerfile.backend .")
+                                
+                                // 也標記為 latest (如果是 main 分支)
+                                if (env.BRANCH_NAME == 'main') {
+                                    backendImage.tag("${DOCKER_REGISTRY}/${DOCKER_BACKEND_IMAGE}:latest")
+                                }
+                                
+                                // 推送到私有註冊表
+                                docker.withRegistry("https://${DOCKER_REGISTRY}", 'docker-registry-credentials') {
+                                    backendImage.push()
+                                    if (env.BRANCH_NAME == 'main') {
+                                        backendImage.push('latest')
+                                    }
+                                }
+                                
+                            } catch (Exception e) {
+                                currentBuild.result = 'FAILURE'
+                                error "後端 Docker 鏡像構建失敗: ${e.getMessage()}"
                             }
                         }
-                        
-                    } catch (Exception e) {
-                        currentBuild.result = 'FAILURE'
-                        error "Docker 鏡像構建失敗: ${e.getMessage()}"
+                    }
+                }
+                
+                stage('Build Frontend Image') {
+                    steps {
+                        script {
+                            try {
+                                // 構建前端 Docker 鏡像
+                                def frontendImage = docker.build("${DOCKER_REGISTRY}/${DOCKER_FRONTEND_IMAGE}:${BUILD_TAG}", "-f Dockerfile.frontend .")
+                                
+                                // 也標記為 latest (如果是 main 分支)
+                                if (env.BRANCH_NAME == 'main') {
+                                    frontendImage.tag("${DOCKER_REGISTRY}/${DOCKER_FRONTEND_IMAGE}:latest")
+                                }
+                                
+                                // 推送到私有註冊表
+                                docker.withRegistry("https://${DOCKER_REGISTRY}", 'docker-registry-credentials') {
+                                    frontendImage.push()
+                                    if (env.BRANCH_NAME == 'main') {
+                                        frontendImage.push('latest')
+                                    }
+                                }
+                                
+                            } catch (Exception e) {
+                                currentBuild.result = 'FAILURE'
+                                error "前端 Docker 鏡像構建失敗: ${e.getMessage()}"
+                            }
+                        }
                     }
                 }
             }
@@ -187,7 +220,8 @@ pipeline {
                             構建編號: ${BUILD_NUMBER}
                             分支: ${BRANCH_NAME}
                             提交: ${GIT_COMMIT_SHORT}
-                            Docker 鏡像: ${DOCKER_REGISTRY}/${DOCKER_IMAGE}:${BUILD_TAG}
+                            後端鏡像: ${DOCKER_REGISTRY}/${DOCKER_BACKEND_IMAGE}:${BUILD_TAG}
+                            前端鏡像: ${DOCKER_REGISTRY}/${DOCKER_FRONTEND_IMAGE}:${BUILD_TAG}
                             
                             構建詳情: ${BUILD_URL}
                         """,
