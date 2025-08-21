@@ -86,20 +86,20 @@ pipeline {
                         sh '''
                             docker run --rm \
                                 -v ${WORKSPACE}/vue:/workspace \
+                                -v /tmp/cachae:/workspace/dist \
                                 -w /workspace \
-                                -u root \
                                 node:22-alpine \
-                                sh -c "apk add su-exec; chown -R 103:0 /.npm 2>/dev/null || true; su-exec 103 npm ci"
+                                npm ci
                         '''
                         
                         // 構建前端應用
                         sh '''
                             docker run --rm \
                                 -v ${WORKSPACE}/vue:/workspace \
+                                -v /tmp/cachae:/workspace/dist \
                                 -w /workspace \
-                                -u root \
                                 node:22-alpine \
-                                sh -c "apk add su-exec; chown -R 103:0 /.npm 2>/dev/null || true; su-exec 103 npm run build"
+                                npm run build
                         '''
                         
                     } catch (Exception e) {
