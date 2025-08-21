@@ -120,7 +120,7 @@ pipeline {
                                 -u 103 \
                                 -v ${WORKSPACE}:/workspace \
                                 -w /workspace \
-                                maven:3.9.6-openjdk-17 \
+                                maven:3.8.5-openjdk-17 \
                                 mvn package -DskipTests=true -Dmaven.frontend.skip=true
                         '''
                         
@@ -204,20 +204,6 @@ pipeline {
     }
     
     post {
-        always {
-            // 清理工作空間
-            cleanWs(
-                cleanWhenNotBuilt: false,
-                deleteDirs: true,
-                disableDeferredWipeout: true,
-                notFailBuild: true,
-                patterns: [
-                    [pattern: 'target/**', type: 'EXCLUDE'],
-                    [pattern: 'vue/node_modules/**', type: 'EXCLUDE']
-                ]
-            )
-        }
-        
         success {
             script {
                 if (env.BRANCH_NAME == 'main') {
