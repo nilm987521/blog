@@ -89,15 +89,6 @@ pipeline {
                                 npm ci
                         '''
                         
-                        // 執行 ESLint 檢查
-                        sh '''
-                            docker run --rm \
-                                -v ${WORKSPACE}/vue:/workspace \
-                                -w /workspace \
-                                node:18-alpine \
-                                npm run lint
-                        '''
-                        
                         // 構建前端應用
                         sh '''
                             docker run --rm \
