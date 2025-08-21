@@ -88,7 +88,7 @@ pipeline {
                                 -v ${WORKSPACE}/vue:/workspace \
                                 -w /workspace \
                                 -u 103 \
-                                node:18-alpine \
+                                node:22-alpine \
                                 npm ci
                         '''
                         
@@ -98,7 +98,7 @@ pipeline {
                                 -v ${WORKSPACE}/vue:/workspace \
                                 -u 103 \
                                 -w /workspace \
-                                node:18-alpine \
+                                node:22-alpine \
                                 npm run build
                         '''
                         
