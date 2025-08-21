@@ -53,6 +53,7 @@ pipeline {
                         // 使用 Docker 執行後端編譯和測試
                         sh '''
                             docker run --rm \
+                                -u 103
                                 -v ${WORKSPACE}:/workspace \
                                 -w /workspace \
                                 maven:3.9.11-eclipse-temurin-17 \
@@ -62,6 +63,7 @@ pipeline {
                         // 運行測試並生成覆蓋率報告
                         sh '''
                             docker run --rm \
+                                -u 103
                                 -v ${WORKSPACE}:/workspace \
                                 -w /workspace \
                                 maven:3.9.11-eclipse-temurin-17 \
@@ -85,6 +87,7 @@ pipeline {
                             docker run --rm \
                                 -v ${WORKSPACE}/vue:/workspace \
                                 -w /workspace \
+                                -u 103
                                 node:18-alpine \
                                 npm ci
                         '''
@@ -93,6 +96,7 @@ pipeline {
                         sh '''
                             docker run --rm \
                                 -v ${WORKSPACE}/vue:/workspace \
+                                -u 103
                                 -w /workspace \
                                 node:18-alpine \
                                 npm run build
@@ -113,6 +117,7 @@ pipeline {
                         // 使用 Docker 打包 Spring Boot 應用
                         sh '''
                             docker run --rm \
+                                -u 103
                                 -v ${WORKSPACE}:/workspace \
                                 -w /workspace \
                                 maven:3.9.6-openjdk-17 \
