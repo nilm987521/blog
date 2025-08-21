@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="zh-TW">
+  <head>
+    <meta charset="UTF-8">
+    <link rel="icon" href="/favicon.ico">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>部落格系統</title>
+    <script>
+      // 處理 OAuth2 回調
+      function handleOAuth2Callback() {
+        // 檢查 URL 中是否包含 token 參數（從 OAuth2 回調頁面獲取）
+        const urlParams = new URLSearchParams(window.location.search);
+        const token = urlParams.get('token');
+        const userId = urlParams.get('userId');
+        const username = urlParams.get('username');
+        const email = urlParams.get('email');
+        const roles = urlParams.get('roles');
+        
+        if (token) {
+          // 儲存認證信息
+          localStorage.setItem('token', token);
+          
+          // 構建用戶對象
+          const user = {
+            id: userId,
+            username: username,
+            email: email,
+            roles: roles ? roles.split(',') : []
+          };
+          
+          localStorage.setItem('user', JSON.stringify(user));
+          
+          // 獲取先前儲存的重定向頁面，如果有的話
+          const redirectUrl = localStorage.getItem('auth_redirect_url');
+          localStorage.removeItem('auth_redirect_url'); // 清除它
+          
+          // 將用戶重定向回原來的頁面或首頁
+          if (redirectUrl) {
+            window.location.href = redirectUrl;
+          } else {
+            // 清理 URL 參數，避免 token 暴露在 URL 中
+            history.replaceState({}, document.title, '/');
+            // 重新加載應用程序，以便應用認證狀態
+            window.location.reload();
+          }
+          return;
+        }
+        
+        // 處理錯誤情況
+        const error = urlParams.get('error');
+        const message = urlParams.get('message');
+        
+        if (error) {
+          console.error('OAuth 登入失敗:', message || error);
+          // 獲取先前儲存的重定向頁面，如果有的話
+          const redirectUrl = localStorage.getItem('auth_redirect_url');
+          localStorage.removeItem('auth_redirect_url'); // 清除它
+          
+          // 重定向回登入頁面並顯示錯誤
+          if (redirectUrl && redirectUrl.includes('/login')) {
+            window.location.href = redirectUrl + `?error=${encodeURIComponent(message || error)}`;
+          } else {
+            window.location.href = '/login?error=' + encodeURIComponent(message || error);
+          }
+        }
+      }
+      
+      // 在頁面加載時處理 OAuth2 回調
+      window.onload = handleOAuth2Callback;
+    </script>
+  </head>
+  <body>
+    <div id="app"></div>
+    <script type="module" src="/src/main.ts"></script>
+  </body>
+</html>

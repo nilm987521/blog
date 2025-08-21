@@ -1,0 +1,108 @@
+spring:
+
+  mvc:
+    static-path-pattern: /**
+  web:
+    resources:
+      static-locations: classpath:/static/
+  # 應用程序名稱
+  application:
+    name: ${SPRING_APPLICATION_NAME:blog}
+
+  jackson:
+    date-format: yyyy-MM-dd HH:mm:ss
+    time-zone: Asia/Taipei
+
+  # 資料庫配置 - 全面提取到環境變數
+  datasource:
+    # 基本連接資訊
+    url: ${SPRING_DATASOURCE_URL}
+    username: ${SPRING_DATASOURCE_USERNAME}
+    password: ${SPRING_DATASOURCE_PASSWORD}
+    driver-class-name: ${SPRING_DATASOURCE_DRIVER}
+    
+    # 連接池配置
+    hikari:
+      connection-timeout: ${SPRING_DATASOURCE_CONNECTION_TIMEOUT:30000}
+      maximum-pool-size: ${SPRING_DATASOURCE_MAX_POOL_SIZE:10}
+      minimum-idle: ${SPRING_DATASOURCE_MIN_IDLE:5}
+      idle-timeout: ${SPRING_DATASOURCE_IDLE_TIMEOUT:600000}
+      max-lifetime: ${SPRING_DATASOURCE_MAX_LIFETIME:1800000}
+
+  # JPA 配置 - 也提取關鍵配置到環境變數
+  jpa:
+    hibernate:
+      ddl-auto: ${SPRING_JPA_HIBERNATE_DDL_AUTO:update}
+    show-sql: ${SPRING_JPA_SHOW_SQL:false}
+    properties:
+      hibernate:
+        dialect: ${SPRING_JPA_DIALECT}
+        format_sql: ${SPRING_JPA_FORMAT_SQL:true}
+  
+  # 文件上傳配置
+  servlet:
+    multipart:
+      max-file-size: 10MB
+      max-request-size: 10MB
+      
+  # OAuth2 配置
+  security:
+    oauth2:
+      client:
+        registration:
+          google:
+            client-id: ${GOOGLE_CLIENT_ID}
+            client-secret: ${GOOGLE_CLIENT_SECRET}
+            redirect-uri: "${VITE_FRONTEND_URL}/oauth/callback"
+            scope:
+              - email
+  
+  config:
+    import: optional:file:.env[.properties]
+
+# 日誌配置
+logging:
+  level:
+    root: ${LOGGING_LEVEL_ROOT:INFO}
+    cc.nilm.blog: ${LOGGING_LEVEL_CC_NILM_BLOG:INFO}
+    org.hibernate: ${LOGGING_LEVEL_ORG_HIBERNATE:INFO}
+    org.hibernate.SQL: ${LOGGING_LEVEL_ORG_HIBERNATE_SQL:DEBUG}
+    org.hibernate.type.descriptor.sql.BasicBinder: TRACE
+    org.hibernate.type.descriptor.sql: TRACE
+
+server:
+  port: ${SERVER_PORT:8080}
+  error:
+    include-message: always
+    include-binding-errors: always
+    include-stacktrace: ${INCLUDE_STACKTRACE:always}
+
+# Springdoc-OpenAPI配置
+springdoc:
+  api-docs:
+    path: ${SPRINGDOC_API_DOCS_PATH:/api-docs}
+  swagger-ui:
+    path: ${SPRINGDOC_SWAGGER_UI_PATH:/swagger-ui.html}
+    operationsSorter: method
+    tagsSorter: alpha
+    filter: true
+  packages-to-scan: cc.nilm.blog.controller
+  paths-to-match: /**
+
+# JWT配置
+app:
+  frontend:
+    url: ${VITE_FRONTEND_URL}
+  jwt:
+    secret: ${JWT_SECRET}
+    access-token-expiration: ${JWT_ACCESS_TOKEN_EXPIRATION:900000}    # 15分鐘
+    refresh-token-expiration: ${JWT_REFRESH_TOKEN_EXPIRATION:604800000} # 7天
+
+  # MinIO 配置
+  minio:
+    endpoint: ${MINIO_ENDPOINT:http://localhost:9000}
+    access-key: ${MINIO_ACCESS_KEY:minioadmin}
+    secret-key: ${MINIO_SECRET_KEY:minioadmin}
+    bucket-name: ${MINIO_BUCKET_NAME:blog-images}
+
+

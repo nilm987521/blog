@@ -1,0 +1,85 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<configuration>
+    <!-- 定義日誌檔案的存放位置 -->
+    <property name="LOG_PATH" value="./logs" />
+    
+    <!-- 定義應用名稱 -->
+    <property name="APP_NAME" value="blog" />
+    
+    <!-- 控制台輸出配置 -->
+    <appender name="CONSOLE" class="ch.qos.logback.core.ConsoleAppender">
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+    
+    <!-- 應用程式日誌檔案配置 -->
+    <appender name="APP_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_PATH}/${APP_NAME}.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/${APP_NAME}.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+    
+    <!-- Hibernate 日誌檔案配置 -->
+    <appender name="HIBERNATE_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_PATH}/hibernate.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/hibernate.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+    
+    <!-- 專門收集 SQL 日誌的配置 -->
+    <appender name="SQL_FILE" class="ch.qos.logback.core.rolling.RollingFileAppender">
+        <file>${LOG_PATH}/sql.log</file>
+        <rollingPolicy class="ch.qos.logback.core.rolling.TimeBasedRollingPolicy">
+            <fileNamePattern>${LOG_PATH}/sql.%d{yyyy-MM-dd}.log</fileNamePattern>
+            <maxHistory>30</maxHistory>
+        </rollingPolicy>
+        <encoder>
+            <pattern>%d{yyyy-MM-dd HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
+            <charset>UTF-8</charset>
+        </encoder>
+    </appender>
+    
+    <!-- Hibernate 相關的 logger 配置 -->
+    <logger name="org.hibernate" level="INFO" additivity="false">
+        <appender-ref ref="HIBERNATE_FILE" />
+        <appender-ref ref="CONSOLE" />
+    </logger>
+    
+    <!-- Hibernate SQL 相關的 logger 配置 -->
+    <logger name="org.hibernate.SQL" level="DEBUG" additivity="false">
+        <appender-ref ref="SQL_FILE" />
+        <appender-ref ref="CONSOLE" />
+    </logger>
+    
+    <!-- Hibernate type 相關的 logger 配置，可以顯示參數值 -->
+    <logger name="org.hibernate.type.descriptor.sql.BasicBinder" level="TRACE" additivity="false">
+        <appender-ref ref="SQL_FILE" />
+        <appender-ref ref="CONSOLE" />
+    </logger>
+    
+    <!-- JPA 相關的 logger 配置 -->
+    <logger name="org.springframework.orm.jpa" level="INFO" additivity="false">
+        <appender-ref ref="HIBERNATE_FILE" />
+        <appender-ref ref="CONSOLE" />
+    </logger>
+    
+    <!-- 根 logger 配置 -->
+    <root level="INFO">
+        <appender-ref ref="CONSOLE" />
+        <appender-ref ref="APP_FILE" />
+    </root>
+</configuration>
