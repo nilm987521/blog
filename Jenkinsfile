@@ -89,7 +89,7 @@ pipeline {
                                 -w /workspace \
                                 -u root \
                                 node:22-alpine \
-                                sh -c "apk install su-exec; chown -R 103:0 /.npm 2>/dev/null || true; su-exec 103 npm ci"
+                                sh -c "apk add su-exec; chown -R 103:0 /.npm 2>/dev/null || true; su-exec 103 npm ci"
                         '''
                         
                         // 構建前端應用
@@ -99,7 +99,7 @@ pipeline {
                                 -w /workspace \
                                 -u root \
                                 node:22-alpine \
-                                sh -c "apk install su-exec; chown -R 103:0 /.npm 2>/dev/null || true; su-exec 103 npm run build"
+                                sh -c "apk add su-exec; chown -R 103:0 /.npm 2>/dev/null || true; su-exec 103 npm run build"
                         '''
                         
                     } catch (Exception e) {
