@@ -194,7 +194,8 @@ pipeline {
                 }
             }
         }
-        
+    }
+    
     post {
         always {
             // 清理工作空間
