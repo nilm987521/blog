@@ -55,7 +55,7 @@ pipeline {
                             docker run --rm \
                                 -v ${WORKSPACE}:/workspace \
                                 -w /workspace \
-                                maven:3.9.6-openjdk-17 \
+                                maven:3.9.11-eclipse-temurin-17 \
                                 mvn clean compile -DskipTests=true
                         '''
                         
@@ -64,7 +64,7 @@ pipeline {
                             docker run --rm \
                                 -v ${WORKSPACE}:/workspace \
                                 -w /workspace \
-                                maven:3.9.6-openjdk-17 \
+                                maven:3.9.11-eclipse-temurin-17 \
                                 mvn test jacoco:report
                         '''
                         
@@ -73,7 +73,7 @@ pipeline {
                             docker run --rm \
                                 -v ${WORKSPACE}:/workspace \
                                 -w /workspace \
-                                maven:3.9.6-openjdk-17 \
+                                maven:3.9.11-eclipse-temurin-17 \
                                 mvn jacoco:check
                         '''
                         
