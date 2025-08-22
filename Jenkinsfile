@@ -125,7 +125,7 @@ pipeline {
             //         branch 'release/*'
             //     }
             // }
-
+            parallel {
                 stage('Build Backend Image') {
                     steps {
                         script {
@@ -139,7 +139,7 @@ pipeline {
                                 }
                                 
                                 // 推送到私有註冊表
-                                docker.withRegistry("https://${DOCKER_REGISTRY}", 'docker-registry-credentials') {
+                                docker.withRegistry("http://${DOCKER_REGISTRY}", 'docker-registry-credentials') {
                                     backendImage.push()
                                     if (env.BRANCH_NAME == 'main') {
                                         backendImage.push('latest')
@@ -167,7 +167,7 @@ pipeline {
                                 }
                                 
                                 // 推送到私有註冊表
-                                docker.withRegistry("https://${DOCKER_REGISTRY}", 'docker-registry-credentials') {
+                                docker.withRegistry("http://${DOCKER_REGISTRY}", 'docker-registry-credentials') {
                                     frontendImage.push()
                                     if (env.BRANCH_NAME == 'main') {
                                         frontendImage.push('latest')
