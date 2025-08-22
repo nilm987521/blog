@@ -2,16 +2,10 @@ pipeline {
     agent any
     
     environment {
-        // Maven 設定
-        MAVEN_OPTS = '-Xmx1024m -XX:MaxPermSize=256m'
-        
         // Docker 設定
         DOCKER_REGISTRY = 'registry.nilm.cc'
         DOCKER_BACKEND_IMAGE = 'blog-backend'
         DOCKER_FRONTEND_IMAGE = 'blog-frontend'
-        
-        // 應用設定
-        SPRING_PROFILES_ACTIVE = 'prod'
         
         // 代碼覆蓋率最低標準
         JACOCO_MIN_COVERAGE = '0.20'
@@ -47,20 +41,29 @@ pipeline {
         }
         
         stage('Backend Build & Test') {
-            agent {
-                docker {
-                    image 'maven:3.9.11-eclipse-temurin-17'
-                    reuseNode true
-                }
-            }
             steps {
                 script {
                     try {
+                        // 使用 Docker 執行後端編譯和測試
                         sh '''
-                            mvn clean compile -DskipTests=true
-                            # 運行測試並生成覆蓋率報告
-                            mvn test jacoco:report
+                            docker run --rm \
+                                -u 103 \
+                                -v ${WORKSPACE}:/workspace \
+                                -w /workspace \
+                                maven:3.9.11-eclipse-temurin-17 \
+                                mvn clean compile -DskipTests=true
                         '''
+                        
+                        // 運行測試並生成覆蓋率報告
+                        sh '''
+                            docker run --rm \
+                                -u 103 \
+                                -v ${WORKSPACE}:/workspace \
+                                -w /workspace \
+                                maven:3.9.11-eclipse-temurin-17 \
+                                mvn test jacoco:report
+                        '''
+                        
                     } catch (Exception e) {
                         currentBuild.result = 'FAILURE'
                         error "後端測試失敗: ${e.getMessage()}"
@@ -72,7 +75,7 @@ pipeline {
         stage('Frontend Build') {
             agent {
                 docker {
-                    image 'node:22-alpine'
+                    image node:22-alpine
                     reuseNode true
                 }
             }
@@ -83,9 +86,13 @@ pipeline {
                         sh '''
                             apk add su-exec
                             su-exec npm ci
-                            # 構建前端應用
                             su-exec npm run build
                         '''
+                        
+                        // 構建前端應用
+                        sh '''
+                        '''
+                        
                     } catch (Exception e) {
                         currentBuild.result = 'FAILURE'
                         error "前端構建失敗: ${e.getMessage()}"
@@ -97,7 +104,7 @@ pipeline {
         stage('Package Backend Application') {
             agent {
                 docker {
-                    image 'maven:3.8.5-openjdk-17'
+                    image maven:3.8.5-openjdk-17
                     reuseNode true
                 }
             }
@@ -105,7 +112,9 @@ pipeline {
                 script {
                     try {
                         // 使用 Docker 打包 Spring Boot 應用
-                        sh 'mvn package -DskipTests=true -Dmaven.frontend.skip=true'
+                        sh '''
+                            mvn package -DskipTests=true -Dmaven.frontend.skip=true
+                        '''
                         
                         // 驗證 JAR 檔案是否存在
                         sh 'ls -la target/*.jar'
