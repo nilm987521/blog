@@ -49,7 +49,7 @@ pipeline {
         stage('Backend Build & Test') {
             agent {
                 docker {
-                    image maven:3.9.11-eclipse-temurin-17
+                    image 'maven:3.9.11-eclipse-temurin-17'
                     reuseNode true
                 }
             }
@@ -72,7 +72,7 @@ pipeline {
         stage('Frontend Build') {
             agent {
                 docker {
-                    image node:22-alpine
+                    image 'node:22-alpine'
                     reuseNode true
                 }
             }
@@ -97,7 +97,7 @@ pipeline {
         stage('Package Backend Application') {
             agent {
                 docker {
-                    image maven:3.8.5-openjdk-17
+                    image 'maven:3.8.5-openjdk-17'
                     reuseNode true
                 }
             }
