@@ -118,13 +118,6 @@ pipeline {
         }
         
         stage('Build Docker Images') {
-            // when {
-            //     anyOf {
-            //         branch 'main'
-            //         branch 'develop'
-            //         branch 'release/*'
-            //     }
-            // }
             parallel {
                 stage('Build Backend Image') {
                     steps {
@@ -141,9 +134,7 @@ pipeline {
                                 // 推送到私有註冊表
                                 docker.withRegistry("http://${DOCKER_REGISTRY}", 'docker-registry-credentials') {
                                     backendImage.push()
-                                    if (env.BRANCH_NAME == 'main') {
-                                        backendImage.push('latest')
-                                    }
+                                    backendImage.push('latest')
                                 }
                                 
                             } catch (Exception e) {
@@ -169,9 +160,7 @@ pipeline {
                                 // 推送到私有註冊表
                                 docker.withRegistry("http://${DOCKER_REGISTRY}", 'docker-registry-credentials') {
                                     frontendImage.push()
-                                    if (env.BRANCH_NAME == 'main') {
-                                        frontendImage.push('latest')
-                                    }
+                                    frontendImage.push('latest')
                                 }
                                 
                             } catch (Exception e) {
