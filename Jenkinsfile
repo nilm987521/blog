@@ -70,7 +70,7 @@ pipeline {
                 docker {
                     image 'node:22-alpine'
                     reuseNode true
-                    args '-u 103'
+                    args '-u 103 -v /tmp/.npm:/.npm'
                 }
             }
             steps {
