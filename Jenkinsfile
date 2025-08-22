@@ -45,6 +45,7 @@ pipeline {
                 docker {
                     image 'maven:3.9.11-eclipse-temurin-17'
                     reuseNode true
+                    args '-u 103'
                 }
             }
             steps {
@@ -69,6 +70,7 @@ pipeline {
                 docker {
                     image 'node:22-alpine'
                     reuseNode true
+                    args '-u 103'
                 }
             }
             steps {
@@ -95,6 +97,7 @@ pipeline {
                 docker {
                     image 'maven:3.8.5-openjdk-17'
                     reuseNode true
+                    args '-u 103'
                 }
             }
             steps {
