@@ -3,7 +3,7 @@ pipeline {
     
     environment {
         // Docker 設定
-        DOCKER_REGISTRY = 'registry.nilm.cc'
+        DOCKER_REGISTRY = 'harbor.nilm.cc'
         DOCKER_BACKEND_IMAGE = 'blog-backend'
         DOCKER_FRONTEND_IMAGE = 'blog-frontend'
         
