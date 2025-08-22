@@ -76,6 +76,7 @@ pipeline {
                     try {
                         // 使用 Docker 執行前端依賴安裝（修復 npm 權限問題）
                         sh '''
+                            cd vue
                             npm ci
                             npm run build
                         '''
