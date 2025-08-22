@@ -41,29 +41,21 @@ pipeline {
         }
         
         stage('Backend Build & Test') {
+            agent {
+                docker {
+                    image 'maven:3.9.11-eclipse-temurin-17'
+                    reuseNode true
+                }
+            }
             steps {
                 script {
                     try {
                         // 使用 Docker 執行後端編譯和測試
                         sh '''
-                            docker run --rm \
-                                -u 103 \
-                                -v ${WORKSPACE}:/workspace \
-                                -w /workspace \
-                                maven:3.9.11-eclipse-temurin-17 \
-                                mvn clean compile -DskipTests=true
+                            mvn clean compile -DskipTests=true
+                            # 運行測試並生成覆蓋率報告
+                            mvn test jacoco:report
                         '''
-                        
-                        // 運行測試並生成覆蓋率報告
-                        sh '''
-                            docker run --rm \
-                                -u 103 \
-                                -v ${WORKSPACE}:/workspace \
-                                -w /workspace \
-                                maven:3.9.11-eclipse-temurin-17 \
-                                mvn test jacoco:report
-                        '''
-                        
                     } catch (Exception e) {
                         currentBuild.result = 'FAILURE'
                         error "後端測試失敗: ${e.getMessage()}"
@@ -84,15 +76,9 @@ pipeline {
                     try {
                         // 使用 Docker 執行前端依賴安裝（修復 npm 權限問題）
                         sh '''
-                            apk add su-exec
-                            su-exec npm ci
-                            su-exec npm run build
+                            npm ci
+                            npm run build
                         '''
-                        
-                        // 構建前端應用
-                        sh '''
-                        '''
-                        
                     } catch (Exception e) {
                         currentBuild.result = 'FAILURE'
                         error "前端構建失敗: ${e.getMessage()}"
