@@ -70,7 +70,7 @@ pipeline {
                 docker {
                     image 'node:22-alpine'
                     reuseNode true
-                    args '-u 103 -v /tmp/node_modules:/workspace/blog/vue/node_modules'
+                    args '-u 103'
                 }
             }
             steps {
@@ -79,7 +79,7 @@ pipeline {
                         // 使用 Docker 執行前端依賴安裝（修復 npm 權限問題）
                         sh '''
                             cd vue
-                            npm ci
+                            # npm ci
                             npm run build
                         '''
                     } catch (Exception e) {
