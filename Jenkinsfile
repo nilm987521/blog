@@ -79,27 +79,24 @@ pipeline {
         }
         
         stage('Frontend Build') {
+            agent {
+                docker {
+                    image node:22-alpine
+                    reuseNode true
+                }
+            }
             steps {
                 script {
                     try {
                         // 使用 Docker 執行前端依賴安裝（修復 npm 權限問題）
                         sh '''
-                            docker run --rm \
-                                -v ${WORKSPACE}/vue:/workspace \
-                                -v /tmp/cachae:/workspace/dist \
-                                -w /workspace \
-                                node:22-alpine \
-                                npm ci
+                            apk add su-exec
+                            su-exec npm ci
+                            su-exec npm run build
                         '''
                         
                         // 構建前端應用
                         sh '''
-                            docker run --rm \
-                                -v ${WORKSPACE}/vue:/workspace \
-                                -v /tmp/cachae:/workspace/dist \
-                                -w /workspace \
-                                node:22-alpine \
-                                npm run build
                         '''
                         
                     } catch (Exception e) {
@@ -111,17 +108,18 @@ pipeline {
         }
         
         stage('Package Backend Application') {
+            agent {
+                docker {
+                    image maven:3.8.5-openjdk-17
+                    reuseNode true
+                }
+            }
             steps {
                 script {
                     try {
                         // 使用 Docker 打包 Spring Boot 應用
                         sh '''
-                            docker run --rm \
-                                -u 103 \
-                                -v ${WORKSPACE}:/workspace \
-                                -w /workspace \
-                                maven:3.8.5-openjdk-17 \
-                                mvn package -DskipTests=true -Dmaven.frontend.skip=true
+                            mvn package -DskipTests=true -Dmaven.frontend.skip=true
                         '''
                         
                         // 驗證 JAR 檔案是否存在
