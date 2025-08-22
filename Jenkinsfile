@@ -118,13 +118,13 @@ pipeline {
         }
         
         stage('Build Docker Images') {
-            when {
-                anyOf {
-                    branch 'main'
-                    branch 'develop'
-                    branch 'release/*'
-                }
-            }
+            // when {
+            //     anyOf {
+            //         branch 'main'
+            //         branch 'develop'
+            //         branch 'release/*'
+            //     }
+            // }
             parallel {
                 stage('Build Backend Image') {
                     steps {
