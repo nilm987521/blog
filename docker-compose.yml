@@ -42,7 +42,7 @@ services:
 
   # Blog BackEnd (K8s Service 名稱: blog-backend-service)
   blog-backend-service:
-    image: registry.nilm.cc/blog-backend:latest
+    image: harbor.nilm.cc/blog/blog-backend:latest
     container_name: blog-backend
     depends_on:
       - blog-postgres-service
@@ -64,7 +64,7 @@ services:
 
   # Blog Frontend (K8s Service 名稱: blog-frontend-service)
   blog-frontend-service:
-    image: registry.nilm.cc/blog-frontend:latest
+    image: harbor.nilm.cc/blog/blog-frontend:latest
     container_name: blog-frontend
     depends_on:
       - blog-backend-service
