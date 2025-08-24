@@ -37,6 +37,7 @@ logs/
 
 vue/node_modules/
 vue/dist/
+vue/package-lock.json
 src/main/resources/static/
 .env
 k8s/secrets.yaml
