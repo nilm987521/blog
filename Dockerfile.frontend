@@ -14,7 +14,7 @@ COPY vue/ .
 RUN npm run build
 
 # 生產環境
-FROM --platform=linux/arm64 nginx:stable-alpine3.21-perl
+FROM --platform=linux/amd64 nginx:stable-alpine3.21-perl
 COPY --from=builder /app/dist /usr/share/nginx/html
 
 # 複製 nginx 配置
