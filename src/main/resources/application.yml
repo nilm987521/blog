@@ -57,7 +57,9 @@ spring:
               - email
 
   config:
-    import: optional:file:/vault/secrets/dotenv,optional:file:.env
+    import:
+      - optional:file:/vault/secrets/dotenv
+      - optional:file:.env
 
 # 日誌配置
 logging:
