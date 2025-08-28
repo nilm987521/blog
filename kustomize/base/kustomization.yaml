@@ -6,7 +6,3 @@ resources:
   - deployment-backend.yaml
   - service.yaml
   - ingress-with-tls.yaml
-images:
-  - name: harbor.nilm.cc/blog/blog-backend
-    newName: harbor.nilm.cc/blog/blog-backend
-    newTag: "123"
