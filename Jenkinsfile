@@ -170,31 +170,31 @@ pipeline {
                         }
                     }
                 }
-            }
-        }
-    }
 
-    stage('Deploy to Staging') {
-        steps {
-            script {
-                sh '''
-                    cd kustomize/overlays/dev
-                    kustomize edit set image ${DOCKER_REGISTRY}/blog/${DOCKER_FRONTEND_IMAGE}=${DOCKER_REGISTRY}/blog/${DOCKER_FRONTEND_IMAGE}:${BUILD_TAG}
-                    kustomize edit set image ${DOCKER_REGISTRY}/blog/${DOCKER_BACKEND_IMAGE}=${DOCKER_REGISTRY}/blog/${DOCKER_BACKEND_IMAGE}:${BUILD_TAG}
-                '''
-                // 部署到 Staging 環境
-                withKubeConfig([credentialsId: 'k8s']) {
-                    sh '''
-                        cd kustomize/overlays/dev
-                        kustomize build . | kubectl apply -f -
-                        kubectl rollout status deployment/blog-backend -n blog-dev
-                        kubectl rollout status deployment/blog-frontend -n blog-dev
-                    '''
+                stage('Deploy to Staging') {
+                   steps {
+                       script {
+                           sh '''
+                               cd kustomize/overlays/dev
+                               kustomize edit set image ${DOCKER_REGISTRY}/blog/${DOCKER_FRONTEND_IMAGE}=${DOCKER_REGISTRY}/blog/${DOCKER_FRONTEND_IMAGE}:${BUILD_TAG}
+                               kustomize edit set image ${DOCKER_REGISTRY}/blog/${DOCKER_BACKEND_IMAGE}=${DOCKER_REGISTRY}/blog/${DOCKER_BACKEND_IMAGE}:${BUILD_TAG}
+                           '''
+                           // 部署到 Staging 環境
+                           withKubeConfig([credentialsId: 'k8s']) {
+                               sh '''
+                                   cd kustomize/overlays/dev
+                                   kustomize build . | kubectl apply -f -
+                                   kubectl rollout status deployment/blog-backend -n blog-dev
+                                   kubectl rollout status deployment/blog-frontend -n blog-dev
+                               '''
+                           }
+                       }
+                   }
                 }
             }
         }
     }
-    
+
     post {
         success {
             script {
