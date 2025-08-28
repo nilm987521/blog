@@ -1,0 +1,56 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: blog-ingress
+  annotations:
+    # 使用nginx-ingress-controller
+    kubernetes.io/ingress.class: "nginx"
+    # 強制使用HTTPS
+    nginx.ingress.kubernetes.io/ssl-redirect: "true"
+    nginx.ingress.kubernetes.io/force-ssl-redirect: "true"
+    # cert-manager自動獲取憑證
+    cert-manager.io/cluster-issuer: "vault-issuer"
+spec:
+  ingressClassName: nginx
+  tls:
+    - hosts:
+        - blog.nilm.cc
+      secretName: blog-vault-tls # cert-manager會自動創建這個Secret
+  rules:
+    - host: blog.nilm.cc
+      http:
+        paths:
+          - path: /api
+            pathType: Prefix
+            backend:
+              service:
+                name: blog-backend-service
+                port:
+                  number: 8080
+          - path: /
+            pathType: Prefix
+            backend:
+              service:
+                name: blog-frontend-service
+                port:
+                  number: 80
+---
+apiVersion: cert-manager.io/v1
+kind: Certificate
+metadata:
+  name: blog-vault-cert
+spec:
+  # 生成的憑證將存儲在這個Secret中
+  secretName: blog-vault-tls
+  # 使用Vault ClusterIssuer
+  issuerRef:
+    name: vault-issuer
+    kind: ClusterIssuer
+    group: cert-manager.io
+  # 憑證詳情
+  commonName: blog.nilm.cc
+  dnsNames:
+    - blog.nilm.cc
+  # 憑證有效期
+  duration: 720h # 30天
+  renewBefore: 240h # 提前10天續期

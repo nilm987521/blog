@@ -1,0 +1,58 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: blog-frontend
+  labels:
+    app: blog-frontend
+spec:
+  selector:
+    matchLabels:
+      app: blog-frontend
+  replicas: 1
+  strategy:
+    rollingUpdate:
+      maxSurge: 25%
+      maxUnavailable: 25%
+    type: RollingUpdate
+  template:
+    metadata:
+      annotations:
+        kubectl.kubernetes.io/default-container: blog-frontend
+      labels:
+        app: blog-frontend
+    spec:
+      containers:
+        - name: blog-frontend
+          image: harbor.nilm.cc/blog/blog-frontend:latest
+          imagePullPolicy: Always
+          resources:
+            requests:
+              cpu: 100m
+              memory: 100Mi
+            limits:
+              cpu: 100m
+              memory: 100Mi
+          ports:
+            - containerPort: 80
+              name: blog-frontend
+          volumeMounts:
+            - name: localtime
+              mountPath: /etc/localtime
+      volumes:
+        - name: localtime
+          hostPath:
+            path: /usr/share/zoneinfo/Asia/Taipei
+      restartPolicy: Always
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: blog-frontend-service
+spec:
+  type: ClusterIP
+  selector:
+    app: blog-frontend
+  ports:
+    - protocol: TCP
+      port: 80
+      targetPort: blog-frontend
