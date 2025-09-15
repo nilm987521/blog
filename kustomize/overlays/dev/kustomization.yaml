@@ -45,6 +45,22 @@ patches:
             secretName: blog-vault-tls # cert-manager會自動創建這個Secret
         rules:
           - host: blog-dev.nilm.cc
+            http:
+              paths:
+                - path: /api
+                  pathType: Prefix
+                  backend:
+                    service:
+                      name: blog-backend-service
+                      port:
+                        number: 8080
+                - path: /
+                  pathType: Prefix
+                  backend:
+                    service:
+                      name: blog-frontend-service
+                      port:
+                        number: 80
   - patch: |-
       apiVersion: cert-manager.io/v1
       kind: Certificate

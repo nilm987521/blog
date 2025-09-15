@@ -37,6 +37,7 @@ spring:
       hibernate:
         dialect: ${SPRING_JPA_DIALECT}
         format_sql: ${SPRING_JPA_FORMAT_SQL:true}
+        show_sql: false
 
   # 文件上傳配置
   servlet:
@@ -64,7 +65,7 @@ logging:
   level:
     root: ${LOGGING_LEVEL_ROOT:INFO}
     cc.nilm.blog: ${LOGGING_LEVEL_CC_NILM_BLOG:INFO}
-    org.hibernate: ${LOGGING_LEVEL_ORG_HIBERNATE:INFO}
+    org.hibernate: ${LOGGING_LEVEL_ORG_HIBERNATE:ERROR}
     org.hibernate.SQL: ${LOGGING_LEVEL_ORG_HIBERNATE_SQL:DEBUG}
     org.hibernate.type.descriptor.sql.BasicBinder: TRACE
     org.hibernate.type.descriptor.sql: TRACE
