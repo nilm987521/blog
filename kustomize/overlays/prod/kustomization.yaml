@@ -1,7 +1,7 @@
 apiVersion: kustomize.config.k8s.io/v1beta1
 kind: Kustomization
 
-namespace: blog-dev
+namespace: blog-prod
 
 resources:
   - ../../base
@@ -9,7 +9,7 @@ resources:
 
 images:
   - name: blog
-    newTag: dev-latest
+    newTag: prod-latest
 
 patches:
   - patch: |-
@@ -21,16 +21,17 @@ patches:
         template:
           metadata:
             annotations:
-              vault.hashicorp.com/agent-inject-secret-dotenv: "blog-dev/data/app"
+              vault.hashicorp.com/role: "database-prod"
+              vault.hashicorp.com/agent-inject-secret-dotenv: "blog-prod/data/app"
               vault.hashicorp.com/agent-inject-template-dotenv: |
-                {{- with secret "blog-dev/data/app" -}}
+                {{- with secret "blog-prod/data/app" -}}
                 export SPRING_DATASOURCE_URL="{{ .Data.data.SPRING_DATASOURCE_URL }}"
                 export SPRING_DATASOURCE_USERNAME="{{ .Data.data.SPRING_DATASOURCE_USERNAME }}"
                 export SPRING_DATASOURCE_PASSWORD="{{ .Data.data.SPRING_DATASOURCE_PASSWORD }}"
                 export JWT_SECRET="{{ .Data.data.JWT_SECRET }}"
                 export GOOGLE_CLIENT_ID="{{ .Data.data.GOOGLE_CLIENT_ID }}"
                 export GOOGLE_CLIENT_SECRET="{{ .Data.data.GOOGLE_CLIENT_SECRET }}"
-                export VITE_FRONTEND_URL="https://blog-dev.nilm.cc"
+                export VITE_FRONTEND_URL="https://blog.nilm.cc"
                 {{- end }}
               vault.hashicorp.com/tls-skip-verify: "true"
   - patch: |-
@@ -41,16 +42,32 @@ patches:
       spec:
         tls:
           - hosts:
-              - blog-dev.nilm.cc
+              - blog.nilm.cc
             secretName: blog-vault-tls # cert-manager會自動創建這個Secret
         rules:
-          - host: blog-dev.nilm.cc
+          - host: blog.nilm.cc
+            http:
+              paths:
+                - path: /api
+                  pathType: Prefix
+                  backend:
+                    service:
+                      name: blog-backend-service
+                      port:
+                        number: 8080
+                - path: /
+                  pathType: Prefix
+                  backend:
+                    service:
+                      name: blog-frontend-service
+                      port:
+                        number: 80
   - patch: |-
       apiVersion: cert-manager.io/v1
       kind: Certificate
       metadata:
         name: blog-vault-cert
       spec:
-        commonName: blog-dev.nilm.cc
+        commonName: blog.nilm.cc
         dnsNames:
-          - blog-dev.nilm.cc
+          - blog.nilm.cc

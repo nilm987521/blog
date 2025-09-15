@@ -29,17 +29,6 @@ pipeline {
             }
         }
         
-        stage('Environment Check') {
-            steps {
-                sh '''
-                    echo "=== 環境資訊 ==="
-                    docker --version
-                    echo "=== 檢查 Docker 運行狀態 ==="
-                    docker info
-                '''
-            }
-        }
-        
         stage('Backend Build & Test') {
             agent {
                 docker {
@@ -79,7 +68,6 @@ pipeline {
                         // 使用 Docker 執行前端依賴安裝（修復 npm 權限問題）
                         sh '''
                             cd vue
-                            # npm ci
                             npm run build
                         '''
                     } catch (Exception e) {
