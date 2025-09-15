@@ -195,7 +195,7 @@ async function handleImageUpload(files: File[], callback: (urls: string[]) => vo
       formData.append('file', file);
       
       // 呼叫後端 API 上傳圖片
-      const response = await axios.post('/api/files/upload', formData, {
+      const response = await axios.post('/files/upload', formData, {
         headers: {
           'Content-Type': 'multipart/form-data'
         }
