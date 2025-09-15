@@ -1,5 +1,5 @@
 import axios from './axios.config'
-import type { Post, PageResponse } from '../types'
+import type { Post, PageResponse } from '@/types'
 
 const API_URL = '/posts'
 

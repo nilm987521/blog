@@ -29,7 +29,7 @@ import { MdEditor, config } from 'md-editor-v3'
 import 'md-editor-v3/lib/style.css'
 import logger from '@/utils/logger'
 import ZH_TW from '@vavt/cm-extension/dist/locale/zh-TW';
-import axios from 'axios';
+import axios from '@/services/axios.config';
 
 config({
   editorConfig: {
