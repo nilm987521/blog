@@ -12,6 +12,7 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.InputStream;
+import java.util.Objects;
 import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
@@ -23,10 +24,11 @@ public class FileStorageService {
     private final MinioClient minioClient;
     private final MinioConfig minioConfig;
     public String storeFile(MultipartFile file) {
-        String originalFileName = StringUtils.cleanPath(file.getOriginalFilename());
+        String originalFileName = StringUtils.cleanPath(Objects.requireNonNull(file.getOriginalFilename()));
 
         try {
             if (originalFileName.contains("..")) {
+                log.error("Sorry! Filename contains invalid path sequence {}", originalFileName);
                 throw new RuntimeException("Sorry! Filename contains invalid path sequence " + originalFileName);
             }
 
@@ -54,6 +56,7 @@ public class FileStorageService {
             log.info("文件 {} 已成功上傳到 MinIO", newFileName);
             return newFileName;
         } catch (Exception ex) {
+            log.error("Could not store file {}. Please try again!", originalFileName, ex);
             throw new RuntimeException("Could not store file " + originalFileName + ". Please try again!", ex);
         }
     }
@@ -75,6 +78,7 @@ public class FileStorageService {
                 log.info("創建 bucket: {}", minioConfig.getBucketName());
             }
         } catch (Exception ex) {
+            log.error("Error creating bucket", ex);
             throw new RuntimeException("Error creating bucket", ex);
         }
     }
