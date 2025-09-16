@@ -3,10 +3,12 @@ package cc.nilm.blog.service;
 import cc.nilm.blog.config.MinioConfig;
 import io.minio.BucketExistsArgs;
 import io.minio.GetObjectArgs;
+import io.minio.GetPresignedObjectUrlArgs;
 import io.minio.MakeBucketArgs;
 import io.minio.MinioClient;
 import io.minio.PutObjectArgs;
 import io.minio.RemoveObjectArgs;
+import io.minio.http.Method;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.core.io.ByteArrayResource;
@@ -17,6 +19,7 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.InputStream;
 import java.util.Objects;
+import java.util.concurrent.TimeUnit;
 
 @Service
 @RequiredArgsConstructor
@@ -35,33 +38,35 @@ public class FileStorageService {
             }
 
             // 確保 bucket 存在
-            ensureBucketExists(minioConfig.getBucketName().concat("/").concat(postId));
+            ensureBucketExists();
+
+            String newFileName = postId.concat("-").concat(originalFileName);
 
             // 上傳文件到 MinIO
             try (InputStream inputStream = file.getInputStream()) {
                 minioClient.putObject(
                     PutObjectArgs.builder()
-                        .bucket(minioConfig.getBucketName().concat("/").concat(postId))
-                        .object(originalFileName)
+                        .bucket(minioConfig.getBucketName())
+                        .object(newFileName)
                         .stream(inputStream, file.getSize(), -1)
                         .contentType(file.getContentType())
                         .build()
                 );
             }
 
-            log.info("文件 {} 已成功上傳到 MinIO", postId.concat("/").concat(originalFileName));
-            return postId.concat("/").concat(originalFileName);
+            log.info("文件 {} 已成功上傳到 MinIO", newFileName);
+            return newFileName;
         } catch (Exception ex) {
             log.error("Could not store file {}. Please try again!", originalFileName, ex);
             throw new RuntimeException("Could not store file " + originalFileName + ". Please try again!", ex);
         }
     }
 
-    private void ensureBucketExists(String bucketName) {
+    private void ensureBucketExists() {
         try {
             boolean exists = minioClient.bucketExists(
                 BucketExistsArgs.builder()
-                    .bucket(bucketName)
+                    .bucket(minioConfig.getBucketName())
                     .build()
             );
             
@@ -116,4 +121,18 @@ public class FileStorageService {
         }
     }
 
+    public String getFileUrl(String fileName) {
+        try {
+            return minioClient.getPresignedObjectUrl(
+                GetPresignedObjectUrlArgs.builder()
+                    .method(Method.GET)
+                    .bucket(minioConfig.getBucketName())
+                    .object(fileName)
+                    .expiry(24, TimeUnit.HOURS)
+                    .build()
+            );
+        } catch (Exception ex) {
+            throw new RuntimeException("Error generating file URL " + fileName, ex);
+        }
+    }
 }
