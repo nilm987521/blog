@@ -32,6 +32,10 @@ patches:
                 export GOOGLE_CLIENT_ID="{{ .Data.data.GOOGLE_CLIENT_ID }}"
                 export GOOGLE_CLIENT_SECRET="{{ .Data.data.GOOGLE_CLIENT_SECRET }}"
                 export VITE_FRONTEND_URL="https://blog.nilm.cc"
+                export MINIO_ENDPOINT="{{ .Data.data.MINIO_ENDPOINT }}"
+                export MINIO_ACCESS_KEY="{{ .Data.data.MINIO_ACCESS_KEY }}"
+                export MINIO_SECRET_KEY="{{ .Data.data.MINIO_SECRET_KEY }}"
+                export MINIO_BUCKET_NAME="{{ .Data.data.MINIO_BUCKET_NAME }}"
                 {{- end }}
               vault.hashicorp.com/tls-skip-verify: "true"
   - patch: |-
