@@ -42,7 +42,7 @@ public class PostController {
     @GetMapping
     @Operation(summary = "獲取所有已發布的文章", description = "分頁獲取所有已發布的文章，可指定排序方式")
     @ApiResponses(value = {
-        @ApiResponse(responseCode = "200", description = "成功獲取文章列表", 
+        @ApiResponse(responseCode = "200", description = "成功獲取文章列表",
                     content = @Content(schema = @Schema(implementation = Post.class)))
     })
     public ResponseEntity<Page<Post>> getAllPosts(
@@ -55,6 +55,27 @@ public class PostController {
         Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortBy));
 
         Page<Post> posts = postService.findPublishedPosts(pageable);
+        return ResponseEntity.ok(posts);
+    }
+
+    @GetMapping("/admin/all")
+    @PreAuthorize("hasRole('ADMIN')")
+    @Operation(summary = "管理員獲取所有文章", description = "管理員專用：分頁獲取所有文章（包括未發布的），可指定排序方式")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "200", description = "成功獲取文章列表",
+                    content = @Content(schema = @Schema(implementation = Post.class))),
+        @ApiResponse(responseCode = "403", description = "沒有管理員權限")
+    })
+    public ResponseEntity<Page<Post>> getAllPostsForAdmin(
+            @Parameter(description = "頁碼，從0開始") @RequestParam(defaultValue = "0") int page,
+            @Parameter(description = "每頁大小") @RequestParam(defaultValue = "10") int size,
+            @Parameter(description = "排序欄位") @RequestParam(defaultValue = "createdAt") String sortBy,
+            @Parameter(description = "排序方向：asc升序，desc降序") @RequestParam(defaultValue = "desc") String direction) {
+
+        Sort.Direction sortDirection = direction.equalsIgnoreCase("asc") ? Sort.Direction.ASC : Sort.Direction.DESC;
+        Pageable pageable = PageRequest.of(page, size, Sort.by(sortDirection, sortBy));
+
+        Page<Post> posts = postService.findAllPosts(pageable);
         return ResponseEntity.ok(posts);
     }
 

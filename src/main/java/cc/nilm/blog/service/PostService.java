@@ -21,6 +21,10 @@ public class PostService {
         return postRepository.findByPublishedTrue(pageable);
     }
 
+    public Page<Post> findAllPosts(Pageable pageable) {
+        return postRepository.findAll(pageable);
+    }
+
     public Page<Post> findByAuthor(User author, Pageable pageable) {
         return postRepository.findByAuthor(author, pageable);
     }

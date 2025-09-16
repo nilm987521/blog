@@ -13,12 +13,24 @@ interface PostData {
 
 class PostService {
   async getAllPosts(
-    page: number = 0, 
-    size: number = 10, 
-    sortBy: string = 'createdAt', 
+    page: number = 0,
+    size: number = 10,
+    sortBy: string = 'createdAt',
     direction: string = 'desc'
   ): Promise<PageResponse<Post>> {
     const response = await axios.get(API_URL, {
+      params: { page, size, sortBy, direction }
+    })
+    return response.data
+  }
+
+  async getAllPostsForAdmin(
+    page: number = 0,
+    size: number = 10,
+    sortBy: string = 'createdAt',
+    direction: string = 'desc'
+  ): Promise<PageResponse<Post>> {
+    const response = await axios.get(`${API_URL}/admin/all`, {
       params: { page, size, sortBy, direction }
     })
     return response.data

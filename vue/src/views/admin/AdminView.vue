@@ -59,10 +59,25 @@
 
       <!-- 文章管理 -->
       <v-window-item value="posts">
-        <h2 class="text-h5 mb-4">文章管理</h2>
+        <div class="d-flex justify-space-between align-center mb-4">
+          <h2 class="text-h5">文章管理</h2>
+          <v-row align="center" class="ml-auto">
+            <v-col cols="auto">
+              <v-select
+                v-model="postFilter"
+                :items="postFilterOptions"
+                label="篩選狀態"
+                variant="outlined"
+                density="compact"
+                style="min-width: 150px;"
+                @update:model-value="filterPosts"
+              />
+            </v-col>
+          </v-row>
+        </div>
         <v-data-table
             :headers="postHeaders"
-            :items="posts"
+            :items="filteredPosts"
             :loading="postLoading"
             class="elevation-1"
         >
@@ -292,7 +307,14 @@ const userHeaders = [
 
 // 文章管理
 const posts = ref([])
+const filteredPosts = ref([])
 const postLoading = ref(false)
+const postFilter = ref('all')
+const postFilterOptions = [
+  { title: '全部文章', value: 'all' },
+  { title: '已發佈', value: 'published' },
+  { title: '未發佈', value: 'unpublished' }
+]
 const postHeaders = [
   {title: 'ID', key: 'id', sortable: true},
   {title: '標題', key: 'title', sortable: true},
@@ -394,12 +416,26 @@ function confirmDeleteUser(user) {
 async function loadPosts() {
   postLoading.value = true
   try {
-    const response = await PostService.getAllPosts(0, 100)
+    const response = await PostService.getAllPostsForAdmin(0, 100)
     posts.value = response.content || []
+    filterPosts() // 載入後立即套用篩選
   } catch (error) {
     console.error('載入文章失敗:', error)
   } finally {
     postLoading.value = false
+  }
+}
+
+function filterPosts() {
+  switch (postFilter.value) {
+    case 'published':
+      filteredPosts.value = posts.value.filter(post => post.published)
+      break
+    case 'unpublished':
+      filteredPosts.value = posts.value.filter(post => !post.published)
+      break
+    default:
+      filteredPosts.value = posts.value
   }
 }
 
