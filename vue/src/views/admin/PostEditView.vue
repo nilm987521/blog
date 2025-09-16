@@ -91,6 +91,7 @@
               <div class="editor-container">
                 <markdown-editor
                   v-model="content"
+                  :post-id="post?.id"
                   height="400px"
                   placeholder="開始編寫您的文章內容..."
                   @ready="editorReady"

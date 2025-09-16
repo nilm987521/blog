@@ -28,8 +28,8 @@ public class FileController {
 
     @PostMapping("/upload")
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
-    public ResponseEntity<UploadFileResponse> uploadFile(@RequestParam("file") MultipartFile file) {
-        String fileName = fileStorageService.storeFile(file);
+    public ResponseEntity<UploadFileResponse> uploadFile(@RequestParam("id") String postId, @RequestParam("file") MultipartFile file) {
+        String fileName = fileStorageService.storeFile(postId, file);
 
         String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
                 .path("/api/files/download/")
@@ -48,10 +48,10 @@ public class FileController {
 
     @PostMapping("/upload-multiple")
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
-    public ResponseEntity<List<UploadFileResponse>> uploadMultipleFiles(@RequestParam("files") MultipartFile[] files) {
+    public ResponseEntity<List<UploadFileResponse>> uploadMultipleFiles(@RequestParam("id") String postId, @RequestParam("files") MultipartFile[] files) {
         List<UploadFileResponse> responses = Arrays.stream(files)
                 .map(file -> {
-                    String fileName = fileStorageService.storeFile(file);
+                    String fileName = fileStorageService.storeFile(postId, file);
 
                     String fileDownloadUri = ServletUriComponentsBuilder.fromCurrentContextPath()
                             .path("/api/files/download/")

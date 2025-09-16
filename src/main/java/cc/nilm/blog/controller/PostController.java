@@ -123,6 +123,29 @@ public class PostController {
         return new ResponseEntity<>(savedPost, HttpStatus.CREATED);
     }
 
+    @PostMapping("/draft")
+    @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
+    @Operation(summary = "創建草稿文章", description = "創建一篇空的草稿文章，用於後續編輯")
+    @ApiResponses(value = {
+        @ApiResponse(responseCode = "201", description = "草稿創建成功",
+                    content = @Content(schema = @Schema(implementation = Post.class))),
+        @ApiResponse(responseCode = "403", description = "沒有權限")
+    })
+    public ResponseEntity<Post> createDraftPost(@AuthenticationPrincipal UserDetailsImpl currentUser) {
+        User author = userService.findById(currentUser.getId())
+                .orElseThrow(() -> new ResponseStatusException(HttpStatus.NOT_FOUND, "User not found"));
+
+        Post post = new Post();
+        post.setTitle("新文章草稿");
+        post.setContent("");
+        post.setPublished(false);
+        post.setAuthor(author);
+        post.setCreatedAt(LocalDateTime.now());
+
+        Post savedPost = postService.save(post);
+        return new ResponseEntity<>(savedPost, HttpStatus.CREATED);
+    }
+
     @PutMapping("/{id}")
     @PreAuthorize("hasRole('USER') or hasRole('ADMIN')")
     public ResponseEntity<Post> updatePost(

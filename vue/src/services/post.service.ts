@@ -35,6 +35,12 @@ class PostService {
     return response.data
   }
 
+  async createDraftPost(): Promise<Post> {
+    console.log('PostService - 創建草稿文章')
+    const response = await axios.post(`${API_URL}/draft`)
+    return response.data
+  }
+
   async updatePost(id: number | string, postData: PostData): Promise<Post> {
     console.log('PostService - 更新文章数据:', id, postData)
     const response = await axios.put(`${API_URL}/${id}`, postData)

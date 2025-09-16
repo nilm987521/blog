@@ -122,6 +122,13 @@ const props = defineProps({
   options: {
     type: Object as PropType<Record<string, any>>,
     default: () => ({})
+  },
+  /**
+   * Post ID for image upload association
+   */
+  postId: {
+    type: [String, Number] as PropType<string | number | null>,
+    default: null
   }
 })
 
@@ -193,6 +200,7 @@ async function handleImageUpload(files: File[], callback: (urls: string[]) => vo
     const uploadPromises = files.map(async (file) => {
       const formData = new FormData();
       formData.append('file', file);
+      formData.append('id', props.postId?.toString() || 'new')
       
       // 呼叫後端 API 上傳圖片
       const response = await axios.post('/files/upload', formData, {

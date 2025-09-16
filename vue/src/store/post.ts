@@ -68,7 +68,7 @@ export const usePostStore = defineStore('post', () => {
   async function createPost(postData: PostData): Promise<Post> {
     loading.value = true
     error.value = null
-    
+
     try {
       const response = await PostService.createPost(postData)
       // 更新文章列表
@@ -78,6 +78,24 @@ export const usePostStore = defineStore('post', () => {
       return response
     } catch (err: any) {
       error.value = '創建文章失敗'
+      console.error(err)
+      throw error.value
+    } finally {
+      loading.value = false
+    }
+  }
+
+  // 創建草稿文章
+  async function createDraftPost(): Promise<Post> {
+    loading.value = true
+    error.value = null
+
+    try {
+      const response = await PostService.createDraftPost()
+      currentPost.value = response
+      return response
+    } catch (err: any) {
+      error.value = '創建草稿失敗'
       console.error(err)
       throw error.value
     } finally {
@@ -257,6 +275,7 @@ export const usePostStore = defineStore('post', () => {
     fetchPosts,
     fetchPostById,
     createPost,
+    createDraftPost,
     updatePost,
     deletePost,
     fetchPostsByCategory,
