@@ -13,7 +13,6 @@ import org.springframework.web.multipart.MultipartFile;
 
 import java.io.InputStream;
 import java.util.Objects;
-import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 @Service
@@ -23,7 +22,7 @@ public class FileStorageService {
 
     private final MinioClient minioClient;
     private final MinioConfig minioConfig;
-    public String storeFile(MultipartFile file) {
+    public String storeFile(String postId, MultipartFile file) {
         String originalFileName = StringUtils.cleanPath(Objects.requireNonNull(file.getOriginalFilename()));
 
         try {
@@ -35,26 +34,20 @@ public class FileStorageService {
             // 確保 bucket 存在
             ensureBucketExists();
 
-            String fileExtension = "";
-            if (originalFileName.contains(".")) {
-                fileExtension = originalFileName.substring(originalFileName.lastIndexOf("."));
-            }
-            String newFileName = UUID.randomUUID() + fileExtension;
-
             // 上傳文件到 MinIO
             try (InputStream inputStream = file.getInputStream()) {
                 minioClient.putObject(
                     PutObjectArgs.builder()
-                        .bucket(minioConfig.getBucketName())
-                        .object(newFileName)
+                        .bucket(minioConfig.getBucketName().concat("/").concat(postId))
+                        .object(originalFileName)
                         .stream(inputStream, file.getSize(), -1)
                         .contentType(file.getContentType())
                         .build()
                 );
             }
 
-            log.info("文件 {} 已成功上傳到 MinIO", newFileName);
-            return newFileName;
+            log.info("文件 {} 已成功上傳到 MinIO", originalFileName);
+            return postId.concat("/").concat(originalFileName);
         } catch (Exception ex) {
             log.error("Could not store file {}. Please try again!", originalFileName, ex);
             throw new RuntimeException("Could not store file " + originalFileName + ". Please try again!", ex);
